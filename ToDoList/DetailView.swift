@@ -9,34 +9,30 @@ import SwiftUI
 
 struct DetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var toDo = ""
-    @State private var reminderIsOn = false
-    @State private var dueDate = Date.now + (60*60*24)
-    @State private var notes = ""
-    @State private var isCompleted = false
-    
-    var passedValue: String
+    @EnvironmentObject var toDosVM: ToDosViewModel
+    @State var toDo: ToDo
+    var newToDo = false
     
     var body: some View {
         List {
-            TextField("Enter To Do here", text: $toDo)
+            TextField("Enter To Do here", text: $toDo.item)
                 .font(.title)
                 .textFieldStyle(.roundedBorder)
                 .padding(.vertical)
                 .listRowSeparator(.hidden)
-            Toggle("Set Reminder:", isOn: $reminderIsOn)
+            Toggle("Set Reminder:", isOn: $toDo.reminderIsOn)
                 .padding(.top)
                 .listRowSeparator(.hidden)
-            DatePicker("Date", selection: $dueDate)
-                .disabled(!reminderIsOn)
+            DatePicker("Date", selection: $toDo.dueDate)
+                .disabled(!toDo.reminderIsOn)
                 .listRowSeparator(.hidden)
                 .padding(.bottom)
             Text("Notes:")
                 .padding(.top)
-            TextField("Notes", text: $notes, axis: .vertical)
+            TextField("Notes", text: $toDo.notes, axis: .vertical)
                 .textFieldStyle(.roundedBorder)
                 .listRowSeparator(.hidden)
-            Toggle("Completed:", isOn: $isCompleted)
+            Toggle("Completed:", isOn: $toDo.isCompleted)
                 .padding(.top)
                 .listSectionSeparator(.hidden)
         }
@@ -49,7 +45,11 @@ struct DetailView: View {
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Save") {
-                    //TODO: Add code for save
+                    // If new, append to toDosVM.toDos else update the toDo that was passed in from the List
+                    if newToDo {
+                        toDosVM.toDos.append(toDo)
+                        dismiss()
+                    }
                 }
             }
         }
@@ -62,7 +62,8 @@ struct DetailView: View {
 struct DetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            DetailView(passedValue: "Item 1")
+            DetailView(toDo: ToDo())
+                .environmentObject(ToDosViewModel())
         }
     }
 }
