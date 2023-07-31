@@ -9,8 +9,10 @@ import Foundation
 
 class ToDosViewModel: ObservableObject {
     @Published var toDos: [ToDo] = []
+    let fileName = "toDos"
     
     init() {
+        // purgeData() // Uncomment to purge data
         loadData()
     }
     
@@ -39,7 +41,7 @@ class ToDosViewModel: ObservableObject {
     }
     
     func loadData() {
-        let path = URL.documentsDirectory.appending(component: "toDos")
+        let path = URL.documentsDirectory.appending(component: fileName)
         guard let data = try? Data(contentsOf: path) else {return}
         do {
             toDos = try JSONDecoder().decode(Array<ToDo>.self, from: data)
@@ -49,12 +51,22 @@ class ToDosViewModel: ObservableObject {
     }
     
     func saveData() {
-        let path = URL.documentsDirectory.appending(component: "toDos")
+        let path = URL.documentsDirectory.appending(component: fileName)
         let data = try? JSONEncoder().encode(toDos)     // 'try?' means if error is thrown, data is nil
         do {
             try data?.write(to: path)
         } catch {
             print("😡 ERROR: Could not save data --> \(error.localizedDescription)")
+        }
+    }
+    
+    func purgeData() {
+        let path = URL.documentsDirectory.appending(component: fileName)
+        let data = try? JSONEncoder().encode("")
+        do {
+            try data?.write(to: path)
+        } catch {
+            print("😡 ERROR: Could not purge data --> \(error.localizedDescription)")
         }
     }
 
